@@ -2,6 +2,10 @@
 
 import React, { useState, useEffect, FormEvent } from "react";
 import Navbar from "../components/Navbar";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { FileDown, FileText } from "lucide-react";
 
 interface Unidad {
   id: number;
@@ -100,6 +104,35 @@ const MaintenanceForm: React.FC = () => {
       console.error("Error:", error);
       alert("Error en la solicitud");
     }
+  };
+
+  // Función para exportar a Excel
+  const exportToExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(mantenimientos);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Mantenimientos");
+    XLSX.writeFile(wb, "mantenimientos.xlsx");
+  };
+
+  // Función para exportar a PDF
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    doc.autoTable({
+      head: [
+        ["ID", "Fecha Entrada", "Mecánico", "Kilometraje", "Tipo", "Diagnóstico", "Recomendación", "Fecha Salida"],
+      ],
+      body: mantenimientos.map((m) => [
+        m.id,
+        m.fechaEntrada,
+        m.mecanico,
+        m.kilometraje,
+        m.tipo === "p" ? "Preventivo" : "Correctivo",
+        m.diagnostico,
+        m.recomendacion,
+        m.fechaSalida || "-",
+      ]),
+    });
+    doc.save("mantenimientos.pdf");
   };
 
   return (
@@ -213,6 +246,16 @@ const MaintenanceForm: React.FC = () => {
             </button>
           </form>
 
+          {/* Botones de exportación */}
+          <div className="mt-4 flex gap-4">
+            <button onClick={exportToExcel} className="bg-green-500 text-white p-2 rounded flex items-center gap-2 hover:bg-green-600">
+              <FileDown /> Exportar a Excel
+            </button>
+            <button onClick={exportToPDF} className="bg-red-500 text-white p-2 rounded flex items-center gap-2 hover:bg-red-600">
+              <FileText /> Exportar a PDF
+            </button>
+          </div>
+
           {/* TABLA */}
           <div className="mt-6">
             <h5 className="text-lg font-semibold mb-2">Mantenimientos Registrados</h5>
@@ -245,7 +288,6 @@ const MaintenanceForm: React.FC = () => {
               </tbody>
             </table>
           </div>
-
         </div>
       </div>
     </div>

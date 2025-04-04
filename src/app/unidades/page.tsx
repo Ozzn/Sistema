@@ -3,6 +3,10 @@ import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { FaPlusCircle } from "react-icons/fa";
 import Navbar from "../components/Navbar";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { FileDown, FileText } from "lucide-react";
 
 interface Unidad {
   id: number;
@@ -222,7 +226,7 @@ function Unidades() {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase?.()) {
       case "operativo":
         return "bg-green-500";
       case "inoperativo":
@@ -234,12 +238,79 @@ function Unidades() {
     }
   };
 
+
+
+const exportToExcel = () => {
+  if (!unidades.length) return alert("No hay datos para exportar");
+
+  const datos = unidades.map(u => ({
+    ID: u.idUnidad,
+    Marca: u.marca?.nombre || "N/A",
+    Modelo: u.modelo?.nombre || "N/A",
+    Transmisión: u.transmision,
+    VIM: u.vim,
+    Año: u.fecha,
+    Estado: u.status?.nombre || "N/A"
+  }));
+  
+
+  const worksheet = XLSX.utils.json_to_sheet(datos);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Unidades");
+  XLSX.writeFile(workbook, "unidades.xlsx");
+};
+
+const exportToPDF = () => {
+  if (!unidades.length) return alert("No hay datos para exportar");
+
+  const doc = new jsPDF();
+  const headers = [["ID", "Marca", "Modelo", "Transmisión", "VIM", "Año", "Estado"]];
+  const rows = unidades.map(u => [
+    u.idUnidad,
+    u.marca?.nombre || "N/A",
+    u.modelo?.nombre || "N/A",
+    u.transmision,
+    u.vim,
+    u.fecha,
+    u.status?.nombre || "N/A"
+  ]);
+  
+
+  autoTable(doc, {
+    head: headers,
+    body: rows,
+  });
+
+  doc.save("unidades.pdf");
+};
+
+
   return (
     <div className="flex">
       <Navbar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
 
       <div className={`flex-1 bg-gray-100 min-h-screen transition-all duration-300 ${menuOpen ? "ml-64" : "ml-0 md:ml-64"}`}>
+        {/* Botones de exportación */}
+<div className="mt-4 flex gap-4">
+  <button
+    onClick={exportToExcel}
+    className="flex items-center bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded"
+  >
+    <FileDown className="mr-2 h-4 w-4" />
+    Exportar Excel
+  </button>
+
+  <button
+    onClick={exportToPDF}
+    className="flex items-center bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded"
+  >
+    <FileText className="mr-2 h-4 w-4" />
+    Exportar PDF
+  </button>
+</div>
+
         <div className="container mx-auto p-6">
+          
           <h4 className="text-lg font-semibold mb-4">AGREGAR NUEVA UNIDAD</h4>
 
           <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow-md">

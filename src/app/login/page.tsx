@@ -1,9 +1,9 @@
-"use client";
-
+"use client"; 
+// REACT
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-
+// JAVASCRIPT
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function Login() {
       alert("Error en el inicio de sesión");
     }
   };
-
+// HTML Y CSS 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 p-6">
       <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-8">

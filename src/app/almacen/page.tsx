@@ -1,6 +1,11 @@
 "use client";
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { FileDown, FileText } from "lucide-react";
+    
 
 const ArticuloPage: React.FC = () => {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -20,6 +25,62 @@ const ArticuloPage: React.FC = () => {
         setUnidad("");
         setCantidad("");
     };
+
+    const [articulos, setArticulos] = useState([
+        {
+          idUnidad: 123,
+          nombre: "Artículo 1",
+          modelo: "Modelo 1",
+          proveedor: "Proveedor 1",
+          ubicacion: "Ubicación 1",
+          stock: 100,
+          estado: "ACTIVOS"
+        }
+      ]);
+      
+      const exportToExcel = () => {
+        if (!articulos.length) return alert("No hay datos para exportar");
+      
+        const datos = articulos.map(a => ({
+          ID: a.idUnidad,
+          Artículo: a.nombre,
+          Modelo: a.modelo,
+          Proveedor: a.proveedor,
+          Ubicación: a.ubicacion,
+          Stock: a.stock,
+          Estado: a.estado
+        }));
+      
+        const worksheet = XLSX.utils.json_to_sheet(datos);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Artículos");
+        XLSX.writeFile(workbook, "articulos.xlsx");
+      };
+      
+      const exportToPDF = () => {
+        if (!articulos.length) return alert("No hay datos para exportar");
+      
+        const doc = new jsPDF();
+        const headers = [["ID", "Artículo", "Modelo", "Proveedor", "Ubicación", "Stock", "Estado"]];
+        const rows = articulos.map(a => [
+          a.idUnidad,
+          a.nombre,
+          a.modelo,
+          a.proveedor,
+          a.ubicacion,
+          a.stock,
+          a.estado
+        ]);
+      
+        autoTable(doc, {
+          head: headers,
+          body: rows,
+        });
+      
+        doc.save("articulos.pdf");
+      };
+      
+      
 
     return (
         <div className="flex">
@@ -102,6 +163,21 @@ const ArticuloPage: React.FC = () => {
                     </div>
 
                     <table className="w-full border-collapse border border-gray-300 text-sm">
+                    <div className="flex justify-end gap-2 mb-4">
+  <button
+    onClick={exportToExcel}
+    className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs"
+  >
+    <FileText className="w-4 h-4" /> Excel
+  </button>
+  <button
+    onClick={exportToPDF}
+    className="flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs"
+  >
+    <FileDown className="w-4 h-4" /> PDF
+  </button>
+</div>
+
                         <thead className="bg-gray-800 text-white">
                             <tr>
                                 {["COD", "ARTICULO", "MODELO", "PROVEEDOR", "UBICACION", "STOCK", "ACCION"].map((header, index) => (

@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, FormEvent } from "react";
+import React, { useState, useEffect, FormEvent } from "react"; //IMPORTAR REACT Y HOOKS
 import Navbar from "../components/Navbar";
 
-interface Proveedor {
+interface Proveedor {  // INTERFAZ PARA PROVEEDORES  
   id: number;
   rif: string;
   empresa: string;
@@ -14,7 +14,7 @@ interface Proveedor {
   status: string;
 }
 
-const Proveedor: React.FC = () => {
+const Proveedor: React.FC = () => { //COMPONENTES PRINCIPALES 
   const [menuOpen, setMenuOpen] = useState(false);
   const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const [rif, setRif] = useState("");
@@ -29,7 +29,7 @@ const Proveedor: React.FC = () => {
     fetchProveedores();
   }, []);
 
-  const fetchProveedores = async () => {
+  const fetchProveedores = async () => { //FUNCION PARA OBTENER PROVEEDORES 
     try {
       const response = await fetch("/api/proveedores");
       const data = await response.json();
@@ -39,7 +39,7 @@ const Proveedor: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {//FUNCION PARA AGREGAR PROVEEDORES 
     e.preventDefault();
     const nuevoProveedor = { rif, empresa, nombre, apellido, telefono, email, status: "Activo" };
 
@@ -67,8 +67,8 @@ const Proveedor: React.FC = () => {
     }
   };
 
-  return (
-    <div className="flex">
+  return ( //RENDERIZAR COMPONENTES  DISEÑO DE LA PAGINA CSS /HTML 
+    <div className="flex"> 
       <Navbar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       <div className={`flex-1 bg-gray-100 min-h-screen p-6 transition-all duration-300 ${menuOpen ? "ml-64" : "ml-0 md:ml-64"}`}>
         <h4 className="text-lg font-semibold mb-4">Agregar Proveedor</h4>
