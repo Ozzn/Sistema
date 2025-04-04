@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect, FormEvent } from "react"; //IMPORTAR REACT Y HOOKS
 import Navbar from "../components/Navbar";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import "jspdf-autotable"; // Importar correctamente autoTable
 
 interface Proveedor {  // INTERFAZ PARA PROVEEDORES  
   id: number;
@@ -67,6 +70,34 @@ const Proveedor: React.FC = () => { //COMPONENTES PRINCIPALES
     }
   };
 
+  // Función para exportar a Excel
+  const exportToExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(proveedores);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Proveedores");
+    XLSX.writeFile(wb, "proveedores.xlsx");
+  };
+
+  // Función para exportar a PDF
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    doc.autoTable({
+      head: [
+        ["COD", "RIF", "EMPRESA", "NOMBRE, APELLIDO", "TELÉFONO", "EMAIL", "STATUS"],
+      ],
+      body: proveedores.map((prov, index) => [
+        index + 1,
+        prov.rif,
+        prov.empresa,
+        `${prov.nombre} ${prov.apellido}`,
+        prov.telefono,
+        prov.email,
+        prov.status,
+      ]),
+    });
+    doc.save("proveedores.pdf");
+  };
+
   return ( //RENDERIZAR COMPONENTES  DISEÑO DE LA PAGINA CSS /HTML 
     <div className="flex"> 
       <Navbar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
@@ -92,6 +123,16 @@ const Proveedor: React.FC = () => { //COMPONENTES PRINCIPALES
             </button>
           </div>
         </form>
+
+        {/* Botones de exportación */}
+        <div className="mt-4 flex gap-4">
+          <button onClick={exportToExcel} className="bg-green-500 text-white p-2 rounded flex items-center gap-2 hover:bg-green-600">
+            Exportar a Excel
+          </button>
+          <button onClick={exportToPDF} className="bg-red-500 text-white p-2 rounded flex items-center gap-2 hover:bg-red-600">
+            Exportar a PDF
+          </button>
+        </div>
 
         {/* TABLA */}
         <div className="mt-6">
