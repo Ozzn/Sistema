@@ -1,10 +1,11 @@
-"use client"; 
-// REACT
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+"use client";
+
+import { useState, useEffect } from "react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-// JAVASCRIPT
-export default function Login() {
+
+const Login = () => {
+  const { data: session, status } = useSession();
   const [form, setForm] = useState({ email: "", password: "" });
   const router = useRouter();
 
@@ -17,12 +18,19 @@ export default function Login() {
     });
 
     if (res?.ok) {
-      router.push("/profile"); // Redirige al perfil si el login es exitoso
+      router.push("/profile");
     } else {
       alert("Error en el inicio de sesión");
     }
   };
-// HTML Y CSS 
+
+  // Redirigir si ya está autenticado
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/profile");
+    }
+  }, [status, router]);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 p-6">
       <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-8">
@@ -35,6 +43,7 @@ export default function Login() {
               type="email"
               placeholder="Correo electrónico"
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               required
             />
@@ -44,6 +53,7 @@ export default function Login() {
               type="password"
               placeholder="Contraseña"
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               required
             />
@@ -61,7 +71,15 @@ export default function Login() {
             Regístrate
           </a>
         </p>
+
+        {session?.user?.role && (
+          <div className="mt-6 text-center text-sm text-gray-700">
+            <p>Tu rol es: <strong>{session.user.role}</strong></p>
+          </div>
+        )}
       </div>
     </div>
   );
-}
+};
+
+export default Login;

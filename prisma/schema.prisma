@@ -9,11 +9,19 @@ datasource db {
 
 model User {
   id        Int      @id @default(autoincrement())
-  username  String   @unique
+  nick      String   @unique
+  nombres   String
+  apellidos String
   email     String   @unique
+  telefono  String
   password  String
-  role      String   @default("USER") 
+  roleId    Int
+  statusId  Int
   createdAt DateTime @default(now())
+
+  // Relaciones
+  role   Role   @relation(fields: [roleId], references: [id])
+  status Status @relation(fields: [statusId], references: [id])
 }
 
 model Unidad {
@@ -51,13 +59,16 @@ model Status {
   id         Int        @id @default(autoincrement())
   nombre     String     @unique
   unidades   Unidad[]
-   personales Personal[] // Relación inversa para Personal
-  }
+  personales Personal[]
+  users      User[]     // Relación inversa para User
+  proveedores Proveedor[] // Relación inversa: un Status puede tener muchos Proveedores
+
+}
 
 model Cargo {
-  id     Int    @id @default(autoincrement())
-  name   String
-   personales Personal[] // Relación inversa para Personal
+  id         Int        @id @default(autoincrement())
+  name       String
+  personales Personal[]
 }
 
 model Personal {
@@ -75,4 +86,51 @@ model Personal {
   // Relaciones
   status    Status   @relation(fields: [statusId], references: [id])
   cargo     Cargo    @relation(fields: [cargoId], references: [id])
-} 
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  users User[] // Relación inversa para User
+  menus Menu[] @relation("RoleMenus")
+}
+
+model Menu {
+  id     Int    @id @default(autoincrement())
+  path   String @unique
+  name   String
+  category String  // Valor predeterminado aquí
+  roles  Role[] @relation("RoleMenus")
+}
+ model Proveedor {
+  id        Int      @id @default(autoincrement())
+  rif       String   @unique
+  empresa   String
+  nombre    String
+  apellido  String
+  telefono  String
+  email     String   @unique
+  statusId  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relación con Status
+  status    Status   @relation(fields: [statusId], references: [id])
+  // Relación con Articulos
+  articulos  Articulo[]
+}
+
+model Articulo {
+  id          Int        @id @default(autoincrement())
+  nombre      String
+  estado      String
+  unidad      String
+  cantidad    Int
+  ubicacion   String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relación con Proveedor
+  proveedor   Proveedor  @relation(fields: [proveedorId], references: [id])
+  proveedorId Int
+}
