@@ -27,6 +27,7 @@ export async function POST(request: Request) {
       );
     }
 
+    // Crear el mantenimiento
     const mantenimiento = await prisma.mantenimiento.create({
       data: {
         unidad: { connect: { id: parseInt(unidad) } },
@@ -44,7 +45,13 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json(mantenimiento); // Retorna el objeto creado
+    // Cambiar el status de la unidad a 4 (Mantenimiento)
+    await prisma.unidad.update({
+      where: { id: parseInt(unidad) },
+      data: { statusId: 4 },
+    });
+
+    return NextResponse.json(mantenimiento); // ✅ Retorna el objeto creado
   } catch (error) {
     console.error("Error en el registro de mantenimiento:", error);
     return NextResponse.json(

@@ -60,13 +60,13 @@ model Modelo {
 }
 
 model Status {
-  id         Int        @id @default(autoincrement())
-  nombre     String     @unique
-  unidades   Unidad[]
-  personales Personal[]
-  users      User[]     // Relación inversa para User
-  proveedores Proveedor[] // Relación inversa: un Status puede tener muchos Proveedores
-
+  id           Int             @id @default(autoincrement())
+  nombre       String          @unique
+  unidades     Unidad[]
+  personales   Personal[]
+  users        User[]
+  proveedores  Proveedor[]
+  mantenimientos Mantenimiento[] // 👈 relación con mantenimientos
 }
 
 model Cargo {
@@ -141,6 +141,8 @@ model Articulo {
   proveedorId Int
 }
 
+
+
 model Mantenimiento {
   id                     Int       @id @default(autoincrement())
   unidadId               Int
@@ -157,17 +159,22 @@ model Mantenimiento {
   prioridad              String
 
   estado                 String?    // 'pendiente', 'en_proceso', 'pausado', 'finalizado'
-  fechaInicio            DateTime?  // Fecha y hora en la que se inició el mantenimiento
-  fechaPausa             DateTime?  // Fecha y hora en la que se pausó
-  fechaFinalizacion      DateTime?  // Fecha y hora en la que se finalizó
-  duracionTotal          Int?       // Duración acumulada en minutos
+  fechaInicio            DateTime?  
+  fechaPausa             DateTime?  
+  fechaFinalizacion      DateTime?  
+  duracionTotal          Int?       
 
   unidad                 Unidad     @relation(fields: [unidadId], references: [id])
   operador               Personal   @relation("OPERADOR DE RUTA", fields: [operadorId], references: [id])
   mecanico               User       @relation("Mecanico", fields: [mecanicoId], references: [id])
 
+  // Nueva relación con Status
+  statusId               Int? 
+  status                 Status?     @relation(fields: [statusId], references: [id])
+
   createdAt              DateTime   @default(now())
-updatedAt DateTime @updatedAt
+  updatedAt              DateTime   @updatedAt
 }
+
 
 

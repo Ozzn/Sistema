@@ -144,6 +144,23 @@ async function main() {
     }
   }
 
+  // 🔧 Asignar statusId: 4 (Mantenimiento) a todas las unidades con registros en mantenimiento
+  const unidadesEnMantenimiento = await prisma.mantenimiento.findMany({
+    select: { unidadId: true },
+    distinct: ['unidadId'],
+  });
+
+  const unidadIds = unidadesEnMantenimiento.map((m) => m.unidadId);
+
+  if (unidadIds.length > 0) {
+    const result = await prisma.unidad.updateMany({
+      where: { id: { in: unidadIds } },
+      data: { statusId: 4 },
+    });
+
+    console.log(`🔧 Unidades actualizadas a statusId 4 (Mantenimiento): ${result.count}`);
+  }
+
   console.log("✅ Seed ejecutado correctamente.");
 }
 

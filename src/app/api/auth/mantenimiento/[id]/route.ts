@@ -50,6 +50,7 @@ export async function PUT(req: NextRequest) {
 
     const data = await req.json();
 
+    // Actualizar mantenimiento
     const actualizado = await prisma.mantenimiento.update({
       where: { id },
       data,
@@ -62,6 +63,14 @@ export async function PUT(req: NextRequest) {
         },
       },
     });
+
+    // Si se está finalizando el mantenimiento, actualizar el status de la unidad a 1 (Operativo)
+    if (data.fechaFinalizacion) {
+      await prisma.unidad.update({
+        where: { id: actualizado.unidadId },
+        data: { statusId: 1 },
+      });
+    }
 
     return NextResponse.json(actualizado);
   } catch (error) {
