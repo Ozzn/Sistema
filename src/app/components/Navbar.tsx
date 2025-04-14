@@ -3,6 +3,7 @@
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
+import { MdExitToApp } from "react-icons/md";
 
 interface NavbarProps {
   menuOpen: boolean;
@@ -11,8 +12,6 @@ interface NavbarProps {
 
 export default function Navbar({ menuOpen, setMenuOpen }: NavbarProps) {
   const { data: session } = useSession();
-
-  // Estado para controlar qué submenú está abierto
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null);
 
   const menusData =
@@ -38,7 +37,7 @@ export default function Navbar({ menuOpen, setMenuOpen }: NavbarProps) {
       </button>
 
       <nav
-        className={`fixed top-0 left-0 h-screen bg-gray-800 text-white p-4 overflow-y-auto w-64 z-40
+        className={`fixed top-0 left-0 h-screen bg-gray-800 text-white p-4 overflow-y-auto w-52 z-40
           transition-transform duration-500 ease-in-out
           ${menuOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0`}
@@ -50,11 +49,12 @@ export default function Navbar({ menuOpen, setMenuOpen }: NavbarProps) {
             uniqueCategories.map((category) => (
               <div key={category}>
                 <h2
-                  className="text-lg font-semibold text-gray-300 mb-2 cursor-pointer"
+                  className="text-md font-semibold text-gray-300 mb-2 cursor-pointer hover:text-white transition"
                   onClick={() => toggleSubMenu(category)}
                 >
                   {category}
                 </h2>
+
                 <ul
                   className={`space-y-1 ml-2 ${
                     openSubMenu === category ? "block" : "hidden"
@@ -69,7 +69,7 @@ export default function Navbar({ menuOpen, setMenuOpen }: NavbarProps) {
                       <li key={menu.id}>
                         <Link
                           href={menu.path}
-                          className="text-sm text-white hover:text-yellow-400 transition"
+                          className="block w-full text-white p-2 rounded hover:bg-blue-500 hover:text-white transition duration-200"
                         >
                           {menu.name}
                         </Link>
@@ -86,8 +86,9 @@ export default function Navbar({ menuOpen, setMenuOpen }: NavbarProps) {
                 onClick={() =>
                   signOut({ redirect: true, callbackUrl: "/login" })
                 }
-                className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition"
+                className="w-full flex items-center justify-center gap-2 text-white p-2 rounded hover:bg-red-600 transition duration-200"
               >
+                <MdExitToApp size={20} />
                 Cerrar sesión
               </button>
             </div>

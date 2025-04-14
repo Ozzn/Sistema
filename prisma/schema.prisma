@@ -22,6 +22,8 @@ model User {
   // Relaciones
   role   Role   @relation(fields: [roleId], references: [id])
   status Status @relation(fields: [statusId], references: [id])
+  mantenimientos Mantenimiento[] @relation("Mecanico") // 🔁 Relación inversa
+
 }
 
 model Unidad {
@@ -41,6 +43,8 @@ model Unidad {
   marca  Marca  @relation(fields: [marcaId], references: [id])
   modelo Modelo @relation(fields: [modeloId], references: [id])
   status Status @relation(fields: [statusId], references: [id])
+  mantenimientos Mantenimiento[] // 🔁 Relación inversa
+
 }
 
 model Marca {
@@ -86,6 +90,8 @@ model Personal {
   // Relaciones
   status    Status   @relation(fields: [statusId], references: [id])
   cargo     Cargo    @relation(fields: [cargoId], references: [id])
+  mantenimientos Mantenimiento[] @relation("OPERADOR DE RUTA") // 🔁 Relación inversa
+
 }
 
 model Role {
@@ -134,3 +140,34 @@ model Articulo {
   proveedor   Proveedor  @relation(fields: [proveedorId], references: [id])
   proveedorId Int
 }
+
+model Mantenimiento {
+  id                     Int       @id @default(autoincrement())
+  unidadId               Int
+  operadorId             Int
+  mecanicoId             Int
+  kilometraje            Int
+  tipo                   String
+  fechaEntrada           DateTime
+  diagnostico            String
+  recomendacion          String
+  observacionOperador    String
+  observacionSupervisor  String
+  rutaUnidad             String 
+  prioridad              String
+
+  estado                 String?    // 'pendiente', 'en_proceso', 'pausado', 'finalizado'
+  fechaInicio            DateTime?  // Fecha y hora en la que se inició el mantenimiento
+  fechaPausa             DateTime?  // Fecha y hora en la que se pausó
+  fechaFinalizacion      DateTime?  // Fecha y hora en la que se finalizó
+  duracionTotal          Int?       // Duración acumulada en minutos
+
+  unidad                 Unidad     @relation(fields: [unidadId], references: [id])
+  operador               Personal   @relation("OPERADOR DE RUTA", fields: [operadorId], references: [id])
+  mecanico               User       @relation("Mecanico", fields: [mecanicoId], references: [id])
+
+  createdAt              DateTime   @default(now())
+updatedAt DateTime @updatedAt
+}
+
+

@@ -1,30 +1,40 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+// Importación de hooks y funciones necesarias
+import { useState, useEffect } from "react"; // Hook para manejar estado y efectos secundarios
+import { signIn, useSession } from "next-auth/react"; // Funciones de autenticación de NextAuth
+import { useRouter } from "next/navigation"; // Para redireccionar al usuario
 
 const Login = () => {
+  // Obtención del estado de sesión actual del usuario
   const { data: session, status } = useSession();
+
+  // Estado local para guardar el correo y la contraseña del formulario
   const [form, setForm] = useState({ email: "", password: "" });
+
+  // Hook de Next.js para redirección
   const router = useRouter();
 
+  // Función que maneja el envío del formulario de login
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevenir recarga de la página
+
+    // Llamada a NextAuth para iniciar sesión con el proveedor "credentials"
     const res = await signIn("credentials", {
-      redirect: false,
+      redirect: false, // No redirigir automáticamente
       email: form.email,
       password: form.password,
     });
 
+    // Si el inicio de sesión fue exitoso, redirigir al perfil
     if (res?.ok) {
       router.push("/profile");
     } else {
-      alert("Error en el inicio de sesión");
+      alert("Error en el inicio de sesión"); // Mostrar error en caso contrario
     }
   };
 
-  // Redirigir si ya está autenticado
+  // Redirige automáticamente al perfil si el usuario ya está autenticado
   useEffect(() => {
     if (status === "authenticated") {
       router.push("/profile");
@@ -32,13 +42,18 @@ const Login = () => {
   }, [status, router]);
 
   return (
+    // Contenedor principal centrado con fondo gris
     <div className="flex min-h-screen items-center justify-center bg-gray-100 p-6">
+      {/* Tarjeta blanca con sombra para el formulario */}
       <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-8">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
           Iniciar sesión
         </h2>
+
+        {/* Formulario de login */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
+            {/* Campo de correo electrónico */}
             <input
               type="email"
               placeholder="Correo electrónico"
@@ -48,7 +63,9 @@ const Login = () => {
               required
             />
           </div>
+
           <div>
+            {/* Campo de contraseña */}
             <input
               type="password"
               placeholder="Contraseña"
@@ -58,6 +75,8 @@ const Login = () => {
               required
             />
           </div>
+
+          {/* Botón para enviar el formulario */}
           <button
             type="submit"
             className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
@@ -65,18 +84,8 @@ const Login = () => {
             Iniciar sesión
           </button>
         </form>
-        <p className="mt-4 text-center text-gray-600">
-          ¿No tienes cuenta?{" "}
-          <a href="/register" className="text-blue-500 hover:underline">
-            Regístrate
-          </a>
-        </p>
 
-        {session?.user?.role && (
-          <div className="mt-6 text-center text-sm text-gray-700">
-            <p>Tu rol es: <strong>{session.user.role}</strong></p>
-          </div>
-        )}
+        
       </div>
     </div>
   );

@@ -14,53 +14,44 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        try {
-          if (!credentials?.email || !credentials?.password) {
-            throw new Error("Email y contraseña son requeridos");
-          }
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Email y contraseña son requeridos");
+        }
 
-          const user = await prisma.user.findUnique({
-            where: { email: credentials.email },
-            include: {
-              role: {
-                include: {
-                  menus: true, // Corrige aquí: era `menu` y debe ser `menus`
-                },
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+          include: {
+            role: {
+              include: {
+                menus: true,
               },
             },
-          });
+          },
+        });
 
-          if (!user) {
-            throw new Error("Usuario no encontrado");
-          }
+        if (!user) throw new Error("Usuario no encontrado");
 
-          const passwordMatch = await bcrypt.compare(
-            credentials.password,
-            user.password
-          );
+        const passwordMatch = await bcrypt.compare(
+          credentials.password,
+          user.password
+        );
 
-          if (!passwordMatch) {
-            throw new Error("Contraseña incorrecta");
-          }
+        if (!passwordMatch) throw new Error("Contraseña incorrecta");
 
-          const menus = user.role?.menus?.map((menu) => ({
-            id: menu.id,
-            name: menu.name,
-            path: menu.path,
-            category: menu.category,
-          })) || [];
+        const menus = user.role?.menus?.map((menu) => ({
+          id: menu.id,
+          name: menu.name,
+          path: menu.path,
+          category: menu.category,
+        })) || [];
 
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.username,
-            role: user.role?.name,
-            menus,
-          };
-        } catch (error) {
-          console.error("Error en authorize:", error);
-          return null; // Devuelve null para provocar un 401
-        }
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.username,
+          role: user.role?.name,
+          menus,
+        };
       },
     }),
   ],

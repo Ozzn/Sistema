@@ -10,18 +10,11 @@ const menuOptions = [
     name: "ALMACEN",
     submenus: [
       { id: "/almacen", name: "Artículos" },
-      { id: "/almacen-despacho", name: "Despacho" },
+      { id: "/despacho", name: "Despacho" },
+      { id: "/lista-despacho", name: "Lista de Despacho" },
     ],
   },
-  {
-    id: "data",
-    name: "DATA",
-    submenus: [
-      { id: "/data", name: "Data" },
-      { id: "/scanner", name: "Scanner" },
-      { id: "/cleandesp", name: "Cleandesp" },
-    ],
-  },
+  
   {
     id: "estacion",
     name: "ESTACION",
@@ -45,20 +38,21 @@ const menuOptions = [
     name: "PROVEEDOR",
     submenus: [{ id: "/proveedor", name: "Proveedor" }],
   },
-  {
-    id: "despacho",
-    name: "DESPACHO",
-    submenus: [
-      { id: "/despacho", name: "Despacho" },
-      { id: "/lista-despacho", name: "Lista de Despacho" },
-    ],
-  },
+  
   {
     id: "flota",
     name: "FLOTA",
     submenus: [
       { id: "/unidades", name: "Unidades" },
-      { id: "/mantenimiento", name: "Mantenimiento" },
+    ],
+  },
+  {
+    id: "mantenimiento",
+    name: "MANTENIMIENTO",
+    submenus: [
+      { id: "/mecanico", name: "Mecánico" },
+      { id: "/progreso", name: "Progreso" },
+      { id: "/registrar", name: "Registrar" },
     ],
   },
 ];

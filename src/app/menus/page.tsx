@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
+import { useSession } from "next-auth/react";
 import Navbar from "../components/Navbar";
+import AuthGuard from "../components/AuthGuard";
 
 interface MenuOption {
   id: string;
@@ -10,6 +12,7 @@ interface MenuOption {
 }
 
 const MenuCreationPage = () => {
+  const { status } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedRoleName, setSelectedRoleName] = useState<string>("");
   const [selectedMenus, setSelectedMenus] = useState<string[]>([]);
@@ -20,16 +23,8 @@ const MenuCreationPage = () => {
       name: "ALMACEN",
       submenus: [
         { id: "/almacen", name: "Artículos" },
-        { id: "/almacen-despacho", name: "Despacho" },
-      ],
-    },
-    {
-      id: "data",
-      name: "DATA",
-      submenus: [
-        { id: "/data", name: "Data" },
-        { id: "/scanner", name: "Scanner" },
-        { id: "/cleandesp", name: "Cleandesp" },
+        { id: "/despacho", name: "Despacho" },
+        { id: "/lista-despacho", name: "Lista de Despacho" },
       ],
     },
     {
@@ -56,19 +51,17 @@ const MenuCreationPage = () => {
       submenus: [{ id: "/proveedor", name: "Proveedor" }],
     },
     {
-      id: "despacho",
-      name: "DESPACHO",
-      submenus: [
-        { id: "/despacho", name: "Despacho" },
-        { id: "/lista-despacho", name: "Lista de Despacho" },
-      ],
-    },
-    {
       id: "flota",
       name: "FLOTA",
+      submenus: [{ id: "/unidades", name: "Unidades" }],
+    },
+    {
+      id: "mantenimiento",
+      name: "MANTENIMIENTO",
       submenus: [
-        { id: "/unidades", name: "Unidades" },
-        { id: "/mantenimiento", name: "Mantenimiento" },
+        { id: "/mantenimiento/registrar", name: "Registrar" },
+        { id: "/mantenimiento/progreso", name: "Progreso" },
+        { id: "/mantenimiento/mecanico", name: "Mecánico" },
       ],
     },
   ];
@@ -100,7 +93,7 @@ const MenuCreationPage = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: selectedRoleName,
-          menus: selectedMenus, // solo submenús, tipo "/unidades"
+          menus: selectedMenus,
         }),
       });
 
@@ -120,71 +113,76 @@ const MenuCreationPage = () => {
   };
 
   return (
-    <div className="flex">
-      <Navbar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
-      <div
-        className={`flex-1 bg-gray-100 min-h-screen transition-all duration-300 ${
-          menuOpen ? "ml-64" : "ml-0 md:ml-64"
-        }`}
-      >
-        <div className="container mx-auto p-6">
-          <h4 className="text-lg font-semibold mb-4">Gestión de Menús por Rol</h4>
+    <AuthGuard>
+      <div className="flex">
+        <Navbar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
 
-          <div className="bg-white p-4 rounded-lg shadow-md mb-6">
-            <h3 className="text-lg font-medium mb-4">
-              Crear un nuevo rol y asignar menús
-            </h3>
-            <form onSubmit={handleSubmit} className="flex flex-wrap gap-4">
-              <input
-                type="text"
-                placeholder="Nombre del rol"
-                className="p-2 border rounded w-full md:w-1/4 min-w-[180px]"
-                value={selectedRoleName}
-                onChange={(e) => setSelectedRoleName(e.target.value)}
-                required
-              />
+        <div
+          className={`flex-1 bg-gray-100 min-h-screen transition-all duration-300 ${
+            menuOpen ? "ml-64" : "ml-0 md:ml-64"
+          }`}
+        >
+          <div className="container mx-auto p-6">
+            <h4 className="text-lg font-semibold mb-4">Gestión de Menús por Rol</h4>
 
-              <div className="w-full mt-4">
-                <h4 className="text-md font-semibold mb-2">Seleccionar Menús</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {menuOptions.map((menu) => (
-                    <div key={menu.id} className="bg-gray-50 p-3 rounded shadow">
-                      <p className="font-semibold text-blue-700 mb-2">{menu.name}</p>
+            <div className="bg-white p-4 rounded-lg shadow-md mb-6">
+              <h3 className="text-lg font-medium mb-4">
+                Crear un nuevo rol y asignar menús
+              </h3>
 
-                      {menu.submenus && (
-                        <div className="ml-3 space-y-1">
-                          {menu.submenus.map((submenu) => (
-                            <label
-                              key={submenu.id}
-                              className="flex items-center space-x-2"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={selectedMenus.includes(submenu.id)}
-                                onChange={() => handleSubmenuToggle(submenu.id)}
-                                className="text-blue-500"
-                              />
-                              <span>{submenu.name}</span>
-                            </label>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+              <form onSubmit={handleSubmit} className="flex flex-wrap gap-4">
+                <input
+                  type="text"
+                  placeholder="Nombre del rol"
+                  className="p-2 border rounded w-full md:w-1/4 min-w-[180px]"
+                  value={selectedRoleName}
+                  onChange={(e) => setSelectedRoleName(e.target.value)}
+                  required
+                />
+
+                <div className="w-full mt-4">
+                  <h4 className="text-md font-semibold mb-2">Seleccionar Menús</h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {menuOptions.map((menu) => (
+                      <div key={menu.id} className="bg-gray-50 p-3 rounded shadow">
+                        <p className="font-semibold text-blue-700 mb-2">{menu.name}</p>
+
+                        {menu.submenus && (
+                          <div className="ml-3 space-y-1">
+                            {menu.submenus.map((submenu) => (
+                              <label
+                                key={submenu.id}
+                                className="flex items-center space-x-2"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={selectedMenus.includes(submenu.id)}
+                                  onChange={() => handleSubmenuToggle(submenu.id)}
+                                  className="text-blue-500"
+                                />
+                                <span>{submenu.name}</span>
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <button
-                type="submit"
-                className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-4"
-              >
-                Crear Rol
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-4"
+                >
+                  Crear Rol
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 };
 
