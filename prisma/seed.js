@@ -1,9 +1,9 @@
 const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcryptjs'); // Importa bcrypt
+const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
-  // Insertar Status (por si no existen)
+  // Insertar Status
   await prisma.status.createMany({
     data: [
       { nombre: 'Operativo' },
@@ -16,7 +16,7 @@ async function main() {
     skipDuplicates: true,
   });
 
-  // Insertar Cargos (por si no existen)
+  // Insertar Cargos
   await prisma.cargo.createMany({
     data: [
       { name: 'DIRECTOR GENERAL' },
@@ -47,26 +47,32 @@ async function main() {
     skipDuplicates: true,
   });
 
-  // Crear o buscar el rol admin
+  // Crear o buscar roles
   const adminRole = await prisma.role.upsert({
     where: { name: "admin" },
     update: {},
     create: { name: "admin" },
   });
 
-  // Crear o buscar el status "Operativo" para el usuario admin
+  const mecanicoRole = await prisma.role.upsert({
+    where: { name: "mecanico" },
+    update: {},
+    create: { name: "mecanico" },
+  });
+
+  // Status operativo
   const operativoStatus = await prisma.status.upsert({
     where: { nombre: "Operativo" },
     update: {},
     create: { nombre: "Operativo" },
   });
 
-  // Cifrar la contraseña
-  const hashedPassword = await bcrypt.hash('admin123', 10); // Cifra la contraseña
+  // Contraseña cifrada
+  const hashedPassword = await bcrypt.hash('admin123', 10);
 
-  // Crear el usuario admin
+  // Crear usuario admin
   const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@admin.com' }, // Cambiar el correo si es necesario
+    where: { email: 'admin@admin.com' },
     update: {},
     create: {
       nick: 'admin',
@@ -74,26 +80,21 @@ async function main() {
       apellidos: 'User',
       email: 'admin@gmail.com',
       telefono: '1234567890',
-      password: hashedPassword, // Usa la contraseña cifrada
+      password: hashedPassword,
       roleId: adminRole.id,
       statusId: operativoStatus.id,
     },
   });
 
-  // Asignar el rol de admin al usuario
   await prisma.user.update({
     where: { id: adminUser.id },
     data: {
-      role: {
-        connect: { id: adminRole.id },
-      },
-      status: {
-        connect: { id: operativoStatus.id },
-      },
+      role: { connect: { id: adminRole.id } },
+      status: { connect: { id: operativoStatus.id } },
     },
   });
 
-  // Lista completa de menús
+  // Lista de menús
   const menuItems = [
     { path: "/almacen", name: "Artículos", category: "ALMACEN" },
     { path: "/despacho", name: "Despacho", category: "ALMACEN" },
@@ -109,7 +110,6 @@ async function main() {
     { path: "/mantenimiento/mecanico", name: "Mecánico", category: "MANTENIMIENTO" },
   ];
 
-  // Crear o actualizar menús
   for (const item of menuItems) {
     const menu = await prisma.menu.upsert({
       where: { path: item.path },
@@ -121,7 +121,7 @@ async function main() {
       },
     });
 
-    // Conectar el rol admin con los menús usando Prisma
+    // Asignar todos los menús al rol admin
     await prisma.role.update({
       where: { id: adminRole.id },
       data: {
@@ -130,6 +130,18 @@ async function main() {
         },
       },
     });
+
+    // Asignar solo los menús de MANTENIMIENTO al rol mecanico
+    if (item.category === "MANTENIMIENTO") {
+      await prisma.role.update({
+        where: { id: mecanicoRole.id },
+        data: {
+          menus: {
+            connect: { id: menu.id },
+          },
+        },
+      });
+    }
   }
 
   console.log("✅ Seed ejecutado correctamente.");
