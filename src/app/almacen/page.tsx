@@ -6,10 +6,29 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { FileDown, FileText, Trash2 } from "lucide-react";
 
+// Definimos interfaces para los tipos de datos
+interface Proveedor {
+  id: string;
+  empresa: string;
+}
+
+interface Articulo {
+  id: string;
+  nombre: string;
+  estado: string;
+  unidad: string;
+  cantidad: number;
+  ubicacion: string;
+  proveedorId: string;
+  proveedor?: Proveedor;
+}
+
 const ArticuloPage: React.FC = () => {
+  // Estados para el menú y pestañas
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("nuevo");
 
+  // Estados para el formulario de nuevo artículo
   const [nombreArticulo, setNombreArticulo] = useState("");
   const [estado, setEstado] = useState("");
   const [unidad, setUnidad] = useState("");
@@ -17,13 +36,16 @@ const ArticuloPage: React.FC = () => {
   const [proveedorId, setProveedorId] = useState("");
   const [ubicacion, setUbicacion] = useState("");
 
-  const [articulos, setArticulos] = useState<any[]>([]);
-  const [proveedores, setProveedores] = useState<any[]>([]);
+  // Estados para los datos
+  const [articulos, setArticulos] = useState<Articulo[]>([]);
+  const [proveedores, setProveedores] = useState<Proveedor[]>([]);
 
+  // Estados para artículos existentes
   const [selectedArticuloId, setSelectedArticuloId] = useState<string>("");
-  const [selectedArticulo, setSelectedArticulo] = useState<any | null>(null);
+  const [selectedArticulo, setSelectedArticulo] = useState<Articulo | null>(null);
   const [cantidadAgregar, setCantidadAgregar] = useState<number>(0);
 
+  // Cargar datos iniciales
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -42,11 +64,13 @@ const ArticuloPage: React.FC = () => {
     fetchData();
   }, []);
 
+  // Actualizar artículo seleccionado cuando cambia el ID
   useEffect(() => {
     const articulo = articulos.find((a) => String(a.id) === selectedArticuloId);
     setSelectedArticulo(articulo || null);
   }, [selectedArticuloId, articulos]);
 
+  // Manejar envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -71,7 +95,7 @@ const ArticuloPage: React.FC = () => {
       setArticulos((prev) => [...prev, result.nuevoArticulo]);
       alert("Artículo agregado");
 
-      // Reset fields
+      // Resetear campos
       setNombreArticulo("");
       setEstado("");
       setUnidad("");
@@ -83,6 +107,7 @@ const ArticuloPage: React.FC = () => {
     }
   };
 
+  // Exportar a Excel
   const exportToExcel = () => {
     if (!articulos.length) return alert("No hay datos para exportar");
 
@@ -102,6 +127,7 @@ const ArticuloPage: React.FC = () => {
     XLSX.writeFile(workbook, "articulos.xlsx");
   };
 
+  // Exportar a PDF
   const exportToPDF = () => {
     if (!articulos.length) return alert("No hay datos para exportar");
 
@@ -127,6 +153,7 @@ const ArticuloPage: React.FC = () => {
     doc.save("articulos.pdf");
   };
 
+  // Actualizar cantidad de artículo existente
   const handleActualizarCantidad = async () => {
     if (!selectedArticuloId || !selectedArticulo) {
       alert("Por favor, selecciona un artículo válido.");
@@ -167,6 +194,7 @@ const ArticuloPage: React.FC = () => {
     }
   };
 
+  // Eliminar artículo
   const handleEliminarArticulo = async (id: string) => {
     const confirm = window.confirm("¿Estás seguro que deseas eliminar este artículo?");
     if (!confirm) return;
@@ -372,37 +400,36 @@ const ArticuloPage: React.FC = () => {
           </button>
         </div>
 
-        {/* 📊 Tabla de artículos */}
+        {/* Tabla de artículos */}
         <table className="w-full border-collapse border border-gray-300 text-sm mt-6">
-  <thead className="bg-gray-800 text-white">
-    <tr>
-      {["COD", "ARTICULO", "PROVEEDOR", "UBICACION", "STOCK", "ACCION"].map((header, index) => (
-        <th key={index} className="border p-2">{header}</th>
-      ))}
-    </tr>
-  </thead>
-  <tbody>
-    {articulos.map((a) => (
-      <tr key={a.id} className="text-center">
-        <td className="border p-2">{a.id}</td>
-        <td className="border p-2">{a.nombre}</td>
-        <td className="border p-2">{a.proveedor?.empresa || ""}</td>
-        <td className="border p-2">{a.ubicacion}</td>
-        <td className="border p-2">{a.cantidad}</td>
-        <td className="border p-2">
-          <button
-            className="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 flex items-center gap-1 text-xs"
-            onClick={() => handleEliminarArticulo(a.id)}
-          >
-            <Trash2 className="w-4 h-4" />
-            Eliminar
-          </button>
-        </td>
-      </tr>
-    ))}
-  </tbody>
-</table>
-
+          <thead className="bg-gray-800 text-white">
+            <tr>
+              {["COD", "ARTICULO", "PROVEEDOR", "UBICACION", "STOCK", "ACCION"].map((header, index) => (
+                <th key={index} className="border p-2">{header}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {articulos.map((a) => (
+              <tr key={a.id} className="text-center">
+                <td className="border p-2">{a.id}</td>
+                <td className="border p-2">{a.nombre}</td>
+                <td className="border p-2">{a.proveedor?.empresa || ""}</td>
+                <td className="border p-2">{a.ubicacion}</td>
+                <td className="border p-2">{a.cantidad}</td>
+                <td className="border p-2">
+                  <button
+                    className="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 flex items-center gap-1 text-xs"
+                    onClick={() => handleEliminarArticulo(a.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
