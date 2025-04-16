@@ -5,7 +5,6 @@ import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { FaPlusCircle } from "react-icons/fa";
 import Navbar from "../components/Navbar";
-import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { FileDown, FileText } from "lucide-react";
@@ -267,10 +266,7 @@ function Unidades() {
       Estado: getStatusName(u.status?.id || 0)
     }));
 
-    const worksheet = XLSX.utils.json_to_sheet(datos);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Unidades");
-    XLSX.writeFile(workbook, "unidades.xlsx");
+    
   };
 
   const exportToPDF = () => {

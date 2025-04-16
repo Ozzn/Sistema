@@ -1,8 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
-import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
+import ExportButtons from "../components/ExportButtons";
 import autoTable from "jspdf-autotable";
 import { FileDown, FileText, Trash2 } from "lucide-react";
 
@@ -121,37 +120,10 @@ const ArticuloPage: React.FC = () => {
       Ubicación: a.ubicacion,
     }));
 
-    const worksheet = XLSX.utils.json_to_sheet(datos);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Artículos");
-    XLSX.writeFile(workbook, "articulos.xlsx");
+    
   };
 
-  // Exportar a PDF
-  const exportToPDF = () => {
-    if (!articulos.length) return alert("No hay datos para exportar");
-
-    const doc = new jsPDF();
-    const headers = [
-      ["ID", "Artículo", "Estado", "Unidad", "Cantidad", "Proveedor", "Ubicación"],
-    ];
-    const rows = articulos.map((a) => [
-      a.id,
-      a.nombre,
-      a.estado,
-      a.unidad,
-      a.cantidad,
-      a.proveedor?.empresa || "",
-      a.ubicacion,
-    ]);
-
-    autoTable(doc, {
-      head: headers,
-      body: rows,
-    });
-
-    doc.save("articulos.pdf");
-  };
+  
 
   // Actualizar cantidad de artículo existente
   const handleActualizarCantidad = async () => {
@@ -385,20 +357,7 @@ const ArticuloPage: React.FC = () => {
           )}
         </div>
 
-        <div className="flex mt-4 gap-4">
-          <button
-            onClick={exportToExcel}
-            className="bg-green-500 text-white px-4 py-2 rounded flex items-center gap-2"
-          >
-            <FileDown className="w-4 h-4" /> Exportar a Excel
-          </button>
-          <button
-            onClick={exportToPDF}
-            className="bg-red-500 text-white px-4 py-2 rounded flex items-center gap-2"
-          >
-            <FileText className="w-4 h-4" /> Exportar a PDF
-          </button>
-        </div>
+        
 
         {/* Tabla de artículos */}
         <table className="w-full border-collapse border border-gray-300 text-sm mt-6">
