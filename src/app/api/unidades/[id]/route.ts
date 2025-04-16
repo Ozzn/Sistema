@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-// GET unidad por ID
+// GET: Obtener unidad por ID
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Record<string, string> }
 ) {
-  try {
-    const id = Number(params.id);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
-    }
+  const { id } = context.params;
 
+  if (!id) {
+    return NextResponse.json({ message: "ID no proporcionado" }, { status: 400 });
+  }
+
+  try {
     const unidad = await prisma.unidad.findUnique({
-      where: { id },
+      where: { id: Number(id) },
       include: {
         marca: true,
         modelo: true,
@@ -22,29 +23,33 @@ export async function GET(
     });
 
     if (!unidad) {
-      return NextResponse.json({ error: "Unidad no encontrada" }, { status: 404 });
+      return NextResponse.json({ message: "Unidad no encontrada" }, { status: 404 });
     }
 
-    return NextResponse.json(unidad);
+    return NextResponse.json(unidad, { status: 200 });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ message: "Error al obtener la unidad", error: error.message }, { status: 500 });
   }
 }
 
-// DELETE unidad por ID
+// DELETE: Eliminar unidad por ID
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Record<string, string> }
 ) {
-  try {
-    const id = Number(params.id);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
-    }
+  const { id } = context.params;
 
-    const deleted = await prisma.unidad.delete({ where: { id } });
-    return NextResponse.json(deleted);
+  if (!id) {
+    return NextResponse.json({ message: "ID no proporcionado" }, { status: 400 });
+  }
+
+  try {
+    const unidadEliminada = await prisma.unidad.delete({
+      where: { id: Number(id) },
+    });
+
+    return NextResponse.json(unidadEliminada, { status: 200 });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ message: "Error al eliminar la unidad", error: error.message }, { status: 500 });
   }
 }
