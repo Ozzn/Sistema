@@ -9,7 +9,7 @@ export async function POST(request: Request) {
       unidad,
       rutaUnidad,
       operador,
-      mecanico,
+      mecanico, // este es el ID del usuario con rol de mecánico
       kilometraje,
       tipo,
       prioridad,
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Crear el mantenimiento
+    // 1. Crear el mantenimiento
     const mantenimiento = await prisma.mantenimiento.create({
       data: {
         unidad: { connect: { id: parseInt(unidad) } },
@@ -45,44 +45,38 @@ export async function POST(request: Request) {
       },
     });
 
-    // Cambiar el status de la unidad a 4 (Mantenimiento)
+    // 2. Cambiar el status de la unidad a 4 (Mantenimiento)
     await prisma.unidad.update({
       where: { id: parseInt(unidad) },
       data: { statusId: 4 },
     });
+
+    // 3. Obtener el teléfono del usuario mecánico
+    const mecanicoUsuario = await prisma.user.findUnique({
+      where: { id: parseInt(mecanico) },
+    });
+
+    const telefono = mecanicoUsuario?.telefono;
+
+    if (telefono) {
+      const mensaje = `🛠️ Nuevo mantenimiento asignado\nUnidad: ${unidad}\nTipo: ${tipo}\nDiagnóstico: ${diagnostico}`;
+
+      // 4. Enviar notificación
+      await fetch(`${process.env.BASE_URL || 'http://localhost:3000'}/api/notificacion`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: telefono,
+          message: mensaje,
+        }),
+      });
+    }
 
     return NextResponse.json(mantenimiento); // ✅ Retorna el objeto creado
   } catch (error) {
     console.error("Error en el registro de mantenimiento:", error);
     return NextResponse.json(
       { message: "Error al registrar mantenimiento." },
-      { status: 500 }
-    );
-  }
-}
-
-// Obtener todos los mantenimientos (GET)
-export async function GET() {
-  try {
-    const mantenimientos = await prisma.mantenimiento.findMany({
-      include: {
-        unidad: {
-          include: {
-            marca: true,
-            modelo: true,
-            status: true,
-          },
-        },
-        operador: true,
-        mecanico: true,
-      },
-    });
-
-    return NextResponse.json(mantenimientos); // ✅ Retorna directamente el array
-  } catch (error) {
-    console.error("Error al obtener mantenimientos:", error);
-    return NextResponse.json(
-      { message: "Error al obtener mantenimientos." },
       { status: 500 }
     );
   }

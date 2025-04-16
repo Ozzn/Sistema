@@ -1,5 +1,6 @@
 "use client";
 import AuthGuard from "../components/AuthGuard";
+import Link from "next/link";
 import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { FaPlusCircle } from "react-icons/fa";
@@ -8,6 +9,7 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { FileDown, FileText } from "lucide-react";
+
 
 interface Unidad {
   id: number;
@@ -331,10 +333,10 @@ function Unidades() {
                       <option key={marca.id} value={marca.id}>{marca.nombre}</option>
                     ))}
                   </select>
-                  <FaPlusCircle 
-                    className="ml-2 text-blue-500 cursor-pointer" 
-                    size={20} 
-                    onClick={() => setMarcaModalOpen(true)} 
+                  <FaPlusCircle
+                    className="ml-2 text-blue-500 cursor-pointer"
+                    size={20}
+                    onClick={() => setMarcaModalOpen(true)}
                   />
                 </div>
                 <div className="flex items-center">
@@ -344,10 +346,10 @@ function Unidades() {
                       <option key={modelo.id} value={modelo.id}>{modelo.nombre}</option>
                     ))}
                   </select>
-                  <FaPlusCircle 
-                    className="ml-2 text-blue-500 cursor-pointer" 
-                    size={20} 
-                    onClick={() => setModeloModalOpen(true)} 
+                  <FaPlusCircle
+                    className="ml-2 text-blue-500 cursor-pointer"
+                    size={20}
+                    onClick={() => setModeloModalOpen(true)}
                   />
                 </div>
                 <input type="text" name="vim" placeholder="VIM" className="p-2 border rounded-md text-center" value={formData.vim} onChange={handleChange} />
@@ -383,7 +385,11 @@ function Unidades() {
                       const statusName = getStatusName(unidad.status?.id || 0);
                       return (
                         <tr key={unidad.id} className="border-t hover:bg-gray-100">
-                          <td className="p-2 text-center">{unidad.idUnidad}</td>
+                          <td className="p-2 text-center text-blue-600 underline">
+                            <Link href={`/unidades/${unidad.id}`}>
+                              {unidad.idUnidad}
+                            </Link>
+                          </td>
                           <td className="p-2 text-center">{unidad.marca?.nombre}</td>
                           <td className="p-2 text-center">{unidad.modelo?.nombre}</td>
                           <td className="p-2 text-center">{unidad.transmision}</td>
@@ -393,7 +399,6 @@ function Unidades() {
                             <button
                               className={`px-4 py-2 text-white rounded-md ${getStatusColor(statusName)}`}
                               onClick={() => {
-                                // No permitir cambiar estado si está en mantenimiento
                                 if (unidad.status?.id !== 4) {
                                   setSelectedUnit(unidad);
                                   setStatusModalOpen(true);
